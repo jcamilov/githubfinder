@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import GithubContext from "../context/github/GithubContext";
 import Spinner from "../components/layout/Spinner";
 import RepoList from "../components/repos/RepoList";
+import { getUserAndRepos } from "../context/github/GithubActions";
 
 import { FaCodepen, FaStore, FaUserFriends, FaUsers } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 
 function User() {
-  const { getUser, getUserRepos, repos, user, loading } =
-    useContext(GithubContext);
+  const { repos, user, dispatch, loading } = useContext(GithubContext);
 
   const params = useParams();
 
@@ -31,13 +31,21 @@ function User() {
   } = user;
 
   useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login);
-  }, []);
+    const getUserData = async () => {
+      const userData = await getUserAndRepos(params.login);
+      dispatch({ type: "SET_LOADING" });
+      dispatch({
+        type: "GET_USER_AND_REPOS",
+        payload: userData,
+      });
+    };
+    getUserData();
+  }, [dispatch, params.login]);
 
   if (loading) {
     return <Spinner />;
   }
+
   return (
     <React.Fragment>
       <div className="w-full mx-auto lg:w-10/12">
